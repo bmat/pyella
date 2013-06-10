@@ -20,7 +20,7 @@ __status__ = 'Beta'
 
 HOST_NAME = 'ella.bmat.ws'
 USERNAME = 'musichackday'
-PASSWORD = 'mhdbcn2010_'
+PASSWORD = 'mhd2012_bcn'
 
 __cache_dir = None
 __cache_enabled = False
@@ -66,7 +66,7 @@ class _Request(object):
             if not url.endswith('/'):
                 url +='/'
             url += 'collections/' + self.collection
-        url += self.method + '?' + data
+        url += self.method + '?' + data + "&format=xml"
 
         #print url
 
@@ -147,7 +147,7 @@ class Artist(_BaseObject):
 
         self.name = None
         self.id = id
-        self._method = '/artists/' + self.id + '.xml'
+        self._method = '/artists/' + self.id
 
         self._mbid = None
         self._links = None
@@ -220,7 +220,7 @@ class Artist(_BaseObject):
         if self._tags is None:
             self._tags = []
             limit = 100
-            method = '/artists/%s/similar/collections/tags/tags.xml' % self.id
+            method = '/artists/%s/similar/collections/tags/tags' % self.id
             xml = self._request(method, True, {'limit': str(limit), 'filter': 'tag_type:%s' % tag_type})
             for tag in xml.getElementsByTagName('tag') :
                 relevance = _extract(tag, 'relevance')
@@ -238,7 +238,7 @@ class Artist(_BaseObject):
         if self._releases is not None: return self._releases
 
         list = []
-        method = '/artists/' + self.id + '/releases.xml'
+        method = '/artists/' + self.id + '/releases'
         metadata =  'release,release_small_image,release_label,'
         metadata_links = ['spotify_release_url','amazon_release_url','itms_release_url','rhapsody_release_url','emusic_release_url','limewire_release_url','trackitdown_release_url','juno_release_url', 'rateyourmusic_release_url','metacritic_release_url','pitchfork_release_url','bbc_co_uk_release_url','rollingstone_release_url','cloudspeakers_url']
         metadata = metadata + ','.join(metadata_links)
@@ -264,7 +264,7 @@ class Artist(_BaseObject):
         if self._tracks is not None: return self._tracks
 
         list = []
-        method = '/artists/' + self.id + '/tracks.xml'
+        method = '/artists/' + self.id + '/tracks'
         metadata = 'track,artist_service_id,artist,release_service_id,release,location,year,genre,track_popularity,track_small_image,recommendable,musicbrainz_track_id,spotify_track_uri,'
         metadata_links = ['spotify_track_url', 'grooveshark_track_url', 'amazon_track_url','itms_track_url','hypem_track_url','musicbrainz_track_url']
         metadata = metadata + ','.join(metadata_links)
@@ -322,7 +322,7 @@ class Artist(_BaseObject):
 
         if self._similar_artists is not None: return self._similar_artists
         list = []
-        method = '/artists/' + self.id + '/similar/artists.xml'
+        method = '/artists/' + self.id + '/similar/artists'
         xml = self._request(method, True, {'fetch_metadata': self._metadata})
         for node in xml.getElementsByTagName('artist'):
             artist_id = node.getAttribute('id') 
@@ -446,7 +446,7 @@ class Album(_BaseObject):
         self.artist = None
         self.name = None
         self.id = id
-        self._method = '/releases/' + self.id + '.xml'
+        self._method = '/releases/' + self.id
         self._image = None
         self._mbid = None
 
@@ -553,7 +553,7 @@ class Album(_BaseObject):
         if self._tracks is not None: return self._tracks
 
         list = []
-        method = '/releases/' + self.id + '/tracks.xml'
+        method = '/releases/' + self.id + '/tracks'
         metadata = 'track,artist_service_id,artist,release_service_id,release,location,year,genre,track_popularity,track_small_image,recommendable,artist_decades1,artist_decades2,musicbrainz_track_id,'
         metadata_links = ['spotify_track_url', 'grooveshark_track_url', 'amazon_track_url','itms_track_url','hypem_track_url','musicbrainz_track_url']
         metadata = metadata + ','.join(metadata_links)
@@ -632,7 +632,7 @@ class Track(_BaseObject):
 
         self._method = ''
         if self.id is not None:
-            self._method = '/tracks/' + self.id + '.xml'
+            self._method = '/tracks/' + self.id
 
         self._metadata = 'track,name,artist_service_id,artist,release_service_id,release,location,year,genre,track_popularity,track_small_image,recommendable,spotify_track_uri,'
         self._metadata_links = ['spotify_track_url', 'grooveshark_track_url', 'amazon_track_url','itms_track_url','hypem_track_url','musicbrainz_track_url']
@@ -939,7 +939,7 @@ class Tag(_BaseObject):
         
         self.id = id
         self.name = None
-        self._method = '/tags/' + self.id + '.xml'
+        self._method = '/tags/' + self.id
 
         self._tags = None
         self._similar_tracks = None
@@ -1224,17 +1224,17 @@ class TrackSearch(_Search):
         if method == 'resolve' :
             artist = query['artist']
             track = query['track']
-            _Search.__init__(self, '/tracks/' + self._method + '.xml', {'artist': artist, 'track': track, 'limit': '100', 'fetch_metadata': self._metadata }, collection, ellaws)
+            _Search.__init__(self, '/tracks/' + self._method, {'artist': artist, 'track': track, 'limit': '100', 'fetch_metadata': self._metadata }, collection, ellaws)
         elif not self._fuzzy : #If not fuzzy => it's a search
             if filter is None:
-                _Search.__init__(self, '/tracks/' + self._method + '.xml', {'q': 'trackartist:' + query, 'limit': '10', 'fetch_metadata': self._metadata }, collection, ellaws)
+                _Search.__init__(self, '/tracks/' + self._method, {'q': 'trackartist:' + query, 'limit': '10', 'fetch_metadata': self._metadata }, collection, ellaws)
             else:
                 if not query:
                     query = ''
                 query += ' AND '.join(filter)
-                _Search.__init__(self, '/tracks/' + self._method + '.xml', {'q': query, 'limit': '10', 'fetch_metadata': self._metadata }, collection, ellaws)
+                _Search.__init__(self, '/tracks/' + self._method, {'q': query, 'limit': '10', 'fetch_metadata': self._metadata }, collection, ellaws)
         else :
-            _Search.__init__(self, '/tracks/match.xml', {'q': query, 'limit': '30', 'fuzzy' : 'true','fetch_metadata': self._metadata }, collection, ellaws)
+            _Search.__init__(self, '/tracks/match', {'q': query, 'limit': '30', 'fuzzy' : 'true','fetch_metadata': self._metadata }, collection, ellaws)
             self._fuzzy = True
 
     def get_next_page(self):
@@ -1335,9 +1335,9 @@ class TagSearch(_Search):
 
         self._fuzzy = fuzzy
         if not fuzzy :
-            _Search.__init__(self, '/tags/' + self._method + '.xml', {'q': query, 'limit': '10', 'fetch_metadata': self._metadata }, collection, ellaws)
+            _Search.__init__(self, '/tags/' + self._method, {'q': query, 'limit': '10', 'fetch_metadata': self._metadata }, collection, ellaws)
         else :
-            _Search.__init__(self, '/tags/match.xml', {'q': query, 'limit': '30', 'fuzzy' : 'True', 'fetch_metadata': self._metadata }, collection, ellaws)
+            _Search.__init__(self, '/tags/match', {'q': query, 'limit': '30', 'fuzzy' : 'True', 'fetch_metadata': self._metadata }, collection, ellaws)
             self._fuzzy = True
 
     def get_next_page(self):
@@ -1382,11 +1382,11 @@ class ArtistSearch(_Search):
         self._threshold = threshold
 
         if method == 'resolve' :
-            _Search.__init__(self, '/artists/' + self._method + '.xml', {'artist': query, 'limit': '100', 'fetch_metadata': self._metadata }, collection, ellaws)
+            _Search.__init__(self, '/artists/' + self._method, {'artist': query, 'limit': '100', 'fetch_metadata': self._metadata }, collection, ellaws)
         elif not self._fuzzy : #If not fuzzy => it's a search
-            _Search.__init__(self, '/artists/' + self._method + '.xml', {'q': query, 'limit': '100', 'fetch_metadata': self._metadata }, collection, ellaws)
+            _Search.__init__(self, '/artists/' + self._method, {'q': query, 'limit': '100', 'fetch_metadata': self._metadata }, collection, ellaws)
         else :
-            _Search.__init__(self, '/artists/match.xml', {'q': query, 'limit': '30', 'fuzzy' : 'true','fetch_metadata': self._metadata }, collection, ellaws)
+            _Search.__init__(self, '/artists/match', {'q': query, 'limit': '30', 'fuzzy' : 'true','fetch_metadata': self._metadata }, collection, ellaws)
             self._fuzzy = True
 
     def get_next_page(self):
